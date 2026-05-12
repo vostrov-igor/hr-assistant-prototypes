@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(sessionStorage.getItem('proto_auth')!=='1'){location.href='../';};</script>
 <title>Авторазбор откликов — HR-ассистент</title>
 <style>
 @font-face {
@@ -459,7 +460,7 @@ body { font-family: var(--font); background: var(--white); color: var(--n900); f
 
 <!-- ════════════ HEADER ════════════ -->
 <header class="header">
-  <div class="logo-wordmark" onclick="go('list')">точка<br>банк</div>
+
   <div class="app-chip" onclick="go('list')" style="cursor:pointer;">
     <div class="app-chip-icon">B</div>
     HR-ассистент

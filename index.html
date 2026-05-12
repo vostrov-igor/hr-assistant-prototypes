@@ -15,9 +15,50 @@
     .icon { font-size: 24px; flex-shrink: 0; }
     .info strong { display: block; font-size: 15px; font-weight: 600; margin-bottom: 2px; }
     .info span { font-size: 13px; color: #888; }
+    #gate { position: fixed; inset: 0; background: #f5f5f5; display: flex; align-items: center; justify-content: center; z-index: 999; }
+    .gate-box { background: #fff; border-radius: 16px; padding: 40px; width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,.1); }
+    .gate-box h2 { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+    .gate-box p { font-size: 14px; color: #888; margin: 0 0 24px; }
+    .gate-box input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; outline: none; transition: border-color .15s; }
+    .gate-box input:focus { border-color: #1a1a1a; }
+    .gate-box input.error { border-color: #e53935; }
+    .gate-box button { margin-top: 12px; width: 100%; padding: 12px; background: #1a1a1a; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity .15s; }
+    .gate-box button:hover { opacity: .85; }
+    .gate-hint { font-size: 13px; color: #e53935; margin-top: 8px; min-height: 18px; }
   </style>
+  <script>
+    const PWD = 'qso4XaBe0L';
+    function checkGate() {
+      if (sessionStorage.getItem('proto_auth') === '1') return;
+      document.getElementById('gate').style.display = 'flex';
+      document.getElementById('main').style.display = 'none';
+    }
+    function submit() {
+      const inp = document.getElementById('pwd');
+      if (inp.value === PWD) {
+        sessionStorage.setItem('proto_auth', '1');
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('main').style.display = '';
+      } else {
+        inp.classList.add('error');
+        document.getElementById('hint').textContent = 'Неверный пароль';
+        setTimeout(() => { inp.classList.remove('error'); inp.value = ''; }, 1200);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', checkGate);
+  </script>
 </head>
 <body>
+  <div id="gate" style="display:none">
+    <div class="gate-box">
+      <h2>HR-ассистент</h2>
+      <p>Введи пароль для доступа к прототипам</p>
+      <input id="pwd" type="password" placeholder="Пароль" onkeydown="if(event.key==='Enter')submit()">
+      <div id="hint" class="gate-hint"></div>
+      <button onclick="submit()">Войти</button>
+    </div>
+  </div>
+  <div id="main" style="display:none">
   <div class="wrap">
     <h1>HR-ассистент — прототипы</h1>
     <p class="subtitle">Прототипы для тестирования с рекрутерами. Для обратной связи — пиши напрямую.</p>
@@ -32,6 +73,7 @@
         </a>
       </li>
     </ul>
+  </div>
   </div>
 </body>
 </html>
