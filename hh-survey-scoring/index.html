@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Авторазбор + Автоотказы — HR-ассистент</title>
+<style>
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_Medium.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_DemiBold.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_Bold.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_ExtraBold.woff2') format('woff2');
+  font-weight: 800; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'TT Norms Pro Tochka';
+  src: url('../../shared/fonts/TT Norms Pro Tochka 2/WOFF2/TT Norms Pro Tochka WOFF2 2-140/TT_Norms_Pro_Tochka_Black.woff2') format('woff2');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+:root {
+  --primary: #835DE1;
+  --primary-hover: #7450CF;
+  --primary-bg: #F0EDFF;
+  --teal: #0D9488;
+  --teal-bg: #EDFAF7;
+  --success: #0D9488;
+  --danger: #DC2626;
+  --danger-bg: #FEF2F2;
+  --n100: #F3F3F3;
+  --n200: #E8E8E8;
+  --n300: #D1D5DB;
+  --n400: #9CA3AF;
+  --n500: #6B7280;
+  --n600: #4B5563;
+  --n700: #374151;
+  --n800: #1F2937;
+  --n900: #111827;
+  --white: #FFFFFF;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 100px;
+  --shadow-md: 0 4px 20px rgba(0,0,0,.10);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.14);
+  --font: 'TT Norms Pro Tochka', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+input, select, textarea { font-family: inherit; font-weight: 400; }
+button { font-family: inherit; font-weight: inherit; }
+body { font-family: var(--font); background: var(--white); color: var(--n900); font-size: 14px; font-weight: 500; line-height: 1.5; min-height: 100vh; }
+
+/* ── Header ── */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white); border-bottom: 1px solid var(--n200);
+  height: 56px; display: flex; align-items: center; padding: 0 24px; gap: 16px;
+}
+.logo-wordmark { font-weight: 900; font-size: 14px; line-height: 1.1; color: var(--n900); letter-spacing: -0.3px; cursor: pointer; user-select: none; }
+.app-chip { display: flex; align-items: center; gap: 6px; background: #E8F8EF; border-radius: var(--r-pill); padding: 5px 12px 5px 6px; font-size: 14px; font-weight: 600; color: #16A34A; cursor: pointer; user-select: none; }
+.app-chip-icon { width: 22px; height: 22px; border-radius: 50%; background: #16A34A; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+.header-nav { display: flex; gap: 24px; margin-left: 8px; }
+.nav-link { font-size: 14px; color: var(--n500); cursor: pointer; transition: color .15s; white-space: nowrap; }
+.nav-link:hover { color: var(--n800); }
+.header-user { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--n700); }
+.user-photo { width: 32px; height: 32px; border-radius: 50%; background: var(--n200); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--n600); flex-shrink: 0; }
+.logout-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; color: var(--n500); display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); transition: .15s; }
+.logout-btn:hover { background: var(--n100); color: var(--n800); }
+
+/* ── Layout ── */
+.main { max-width: 780px; margin: 0 auto; padding: 32px 24px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Back button ── */
+.back-btn-sq { width: 36px; height: 36px; border: 1px solid var(--n200); background: var(--white); border-radius: var(--r-sm); cursor: pointer; font-size: 18px; color: var(--n700); display: inline-flex; align-items: center; justify-content: center; transition: .15s; }
+.back-btn-sq:hover { background: var(--n100); }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: .15s; white-space: nowrap; text-decoration: none; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-ghost { background: var(--n100); color: var(--primary); }
+.btn-ghost:hover { background: var(--n200); }
+.btn-ghost-neutral { background: var(--n100); color: var(--n700); }
+.btn-ghost-neutral:hover { background: var(--n200); }
+.btn-sm { padding: 8px 16px; font-size: 14px; }
+.btn-lg { padding: 14px 32px; font-size: 15px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Badges ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; }
+.badge-teal   { background: var(--teal-bg); color: var(--teal); }
+.badge-yellow { background: #FEF9C3; color: #A16207; }
+.badge-gray   { background: var(--n100); color: var(--n500); }
+.badge-orange { background: #FFF7ED; color: #C2410C; }
+
+/* ── List view ── */
+.list-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.inline-tabs { display: flex; align-items: baseline; gap: 16px; }
+.itab { background: none; border: none; cursor: pointer; font-size: 22px; font-weight: 700; color: #C0C0C0; padding: 0; transition: color .15s; }
+.itab.active { color: var(--n900); }
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--n400); pointer-events: none; }
+.search-input { width: 100%; padding: 11px 14px 11px 42px; border: none; border-radius: var(--r-pill); font-size: 14px; outline: none; background: var(--n100); transition: background .15s; font-family: var(--font); }
+.search-input:focus { background: var(--n200); }
+
+/* ── Vacancy rows ── */
+.vac-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; cursor: pointer; border-bottom: 1px solid #F0F0F0; transition: opacity .1s; }
+.vac-row:hover .vac-name { color: var(--primary); }
+.vac-row:last-child { border-bottom: none; }
+.vac-circle { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #A98AE8 0%, #835DE1 100%); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; user-select: none; }
+.vac-info { flex: 1; min-width: 0; }
+.vac-name { font-size: 15px; font-weight: 500; color: var(--n900); margin-bottom: 4px; transition: color .15s; }
+.vac-feat-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── Empty state ── */
+.empty { text-align: center; padding: 64px 24px; }
+.empty-ico { font-size: 44px; margin-bottom: 16px; opacity: .3; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--n700); margin-bottom: 6px; }
+.empty-sub { font-size: 14px; color: var(--n500); }
+
+/* ── Vacancy page ── */
+.vac-page-wrap { max-width: 780px; margin: 0 auto; padding: 24px 24px; }
+.vac-page-header { margin-bottom: 20px; }
+.vac-page-title { font-size: 28px; font-weight: 700; margin: 16px 0 10px; }
+.vac-page-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.vac-page-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Settings layout ── */
+.settings-wrap { position: relative; min-height: calc(100vh - 56px); }
+.settings-sidebar { position: fixed; left: 0; top: 56px; width: 280px; height: calc(100vh - 56px); overflow-y: auto; padding: 24px 24px; z-index: 10; }
+.settings-sidebar-title { font-size: 20px; font-weight: 700; margin-top: 16px; color: var(--n900); }
+.settings-sidebar-sub { font-size: 14px; color: var(--n500); margin-top: 6px; }
+
+/* ── Flat sections ── */
+.flat-section { margin-bottom: 36px; }
+.flat-section-title { font-size: 17px; font-weight: 700; color: var(--n900); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.q-icon { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--n300); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--n400); flex-shrink: 0; cursor: help; font-weight: 600; position: relative; }
+.q-icon::after { content: attr(data-tooltip); position: absolute; left: calc(100% + 12px); top: 50%; transform: translateY(-50%); background: var(--white); color: var(--n800); border-radius: var(--r-md); padding: 12px 16px; font-size: 14px; font-weight: 500; line-height: 1.5; width: 240px; box-shadow: 0 4px 24px rgba(0,0,0,.13); z-index: 500; pointer-events: none; white-space: normal; opacity: 0; transition: opacity .15s; }
+.q-icon::before { content: ''; position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right-color: var(--white); z-index: 501; pointer-events: none; opacity: 0; transition: opacity .15s; }
+.q-icon:hover::after, .q-icon:hover::before { opacity: 1; }
+.flat-sub { font-size: 14px; font-weight: 500; color: var(--n700); margin-bottom: 8px; }
+
+/* ── Requirement rows ── */
+.req-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #F5F5F5; }
+.req-row:last-child { border-bottom: none; }
+.req-circle { width: 40px; height: 40px; border-radius: 50%; background: #835DE1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; cursor: pointer; }
+.req-row-info { flex: 1; min-width: 0; cursor: pointer; }
+.req-row-type { font-size: 15px; font-weight: 600; color: var(--n900); }
+.req-row-params { font-size: 14px; color: var(--n500); line-height: 1.4; }
+.req-trash { width: 32px; height: 32px; border: none; background: none; cursor: pointer; color: var(--n400); font-size: 18px; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); transition: .15s; flex-shrink: 0; }
+.req-trash:hover { background: var(--n100); color: var(--danger); }
+.req-empty { font-size: 14px; color: var(--n500); padding: 6px 0; }
+
+/* ── Add pill button ── */
+.add-pill { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 16px; background: var(--n100); border-radius: var(--r-md); border: none; cursor: pointer; font-size: 14px; color: var(--primary); font-weight: 500; transition: background .15s; margin-top: 8px; font-family: var(--font); }
+.add-pill:hover { background: var(--n200); }
+.add-pill-plus { font-size: 18px; font-weight: 400; line-height: 1; }
+
+/* ── Flat form fields ── */
+.flat-field-group { margin-bottom: 10px; }
+.flat-field-box { background: var(--n100); border-radius: var(--r-md); padding: 10px 14px; position: relative; cursor: pointer; transition: background .15s; }
+.flat-field-box:hover { background: #EBEBEB; }
+.flat-field-label { font-size: 14px; color: var(--n500); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
+.flat-field-arrow { color: var(--n400); font-size: 14px; }
+.flat-field-value { font-size: 14px; color: var(--n700); }
+.flat-field-placeholder { font-size: 14px; color: var(--n400); }
+.flat-field-box.has-error { background: #FEF2F2; }
+.flat-field-underline { display: none; }
+.flat-field-underline.error { display: block; height: 2px; background: var(--danger); margin: 8px 0 0; }
+.flat-field-error { font-size: 14px; color: var(--danger); margin-top: 4px; }
+.flat-field-box.disabled { opacity: 0.55; cursor: not-allowed; }
+.flat-field-box.disabled:hover { background: var(--n100); }
+
+/* ── Toggle flat ── */
+.flat-toggle-box { background: var(--n100); border-radius: var(--r-md); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; cursor: pointer; }
+.flat-toggle-label { font-size: 14px; color: var(--n800); }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; cursor: pointer; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track { position: absolute; inset: 0; background: var(--n300); border-radius: 12px; transition: background .2s; }
+.toggle-track::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle input:checked ~ .toggle-track { background: var(--primary); }
+.toggle input:checked ~ .toggle-track::after { transform: translateX(20px); }
+.toggle input:disabled ~ .toggle-track { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Info box ── */
+.info-box { background: var(--n100); border-radius: var(--r-md); padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--n700); }
+.info-box-icon { color: var(--primary); flex-shrink: 0; }
+.wolves-status { font-size: 14px; font-weight: 600; color: var(--teal); margin-bottom: 8px; }
+
+/* ── Save footer ── */
+.settings-save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0)); padding: 0 0 24px; display: block; pointer-events: none; }
+.settings-save-footer-inner { max-width: 780px; margin: 0 auto; padding: 16px 24px 0; display: flex; justify-content: center; pointer-events: all; }
+.settings-save-footer button { pointer-events: all; }
+
+/* ── Multiselect ── */
+.ms-wrap { position: relative; }
+.ms-box { padding: 0; background: transparent; border: none; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; cursor: pointer; }
+.ms-placeholder { color: var(--n400); font-size: 14px; padding: 2px 0; }
+.ms-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--primary-bg); color: var(--primary); border-radius: var(--r-pill); font-size: 14px; font-weight: 500; }
+.ms-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--white); border: 1px solid var(--n200); border-radius: var(--r-md); box-shadow: var(--shadow-md); z-index: 200; display: none; max-height: 240px; overflow-y: auto; }
+.ms-dropdown.open { display: block; }
+.ms-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; font-size: 14px; transition: background .1s; }
+.ms-opt:hover { background: var(--n100); }
+.ms-check { width: 16px; height: 16px; border: 1.5px solid var(--n300); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; transition: .15s; }
+.ms-opt.selected .ms-check { background: var(--primary); border-color: var(--primary); color: #fff; }
+.ms-opt.selected { color: var(--primary); }
+
+/* ── Modal ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(17,24,39,.45); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+.overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: var(--r-xl); width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-head { padding: 22px 24px 16px; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-x { width: 28px; height: 28px; border-radius: 50%; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--n500); transition: .15s; }
+.modal-x:hover { background: var(--n100); color: var(--n800); }
+.modal-body { padding: 0 24px 8px; }
+.modal-foot { padding: 16px 24px 24px; }
+.modal-field { background: var(--n100); border-radius: var(--r-md); padding: 10px 14px; margin-bottom: 10px; cursor: text; transition: background .15s, box-shadow .15s; box-shadow: 0 0 0 0 transparent; }
+.modal-field:hover { background: #EBEBEB; }
+.modal-field:focus-within { background: var(--white); box-shadow: 0 0 0 1.5px var(--primary); }
+.modal-field.has-error { background: var(--n100); box-shadow: inset 0 -2px 0 var(--danger); }
+.modal-field-label { font-size: 14px; color: var(--n500); margin-bottom: 3px; }
+.modal-field input, .modal-field select, .modal-field textarea { width: 100%; background: transparent; border: none; outline: none; font-size: 14px; color: var(--n900); font-family: var(--font); padding: 0; }
+.modal-field select { appearance: none; cursor: pointer; }
+.modal-field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.modal-field input::placeholder, .modal-field textarea::placeholder { color: var(--n400); }
+.modal-field-error { font-size: 14px; color: var(--danger); margin-top: 6px; margin-bottom: 0; padding: 0; }
+.modal-field-hint { font-size: 14px; font-weight: 400; color: var(--n500); margin-top: -6px; margin-bottom: 10px; padding: 0 2px; }
+.checker-desc { font-size: 14px; font-weight: 400; color: var(--n600); margin-bottom: 10px; line-height: 1.6; }
+.modal-field-row { display: grid; gap: 8px; }
+.modal-field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.link { color: var(--primary); font-size: 14px; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+/* ── Action sheet ── */
+.as-overlay { display: none; position: fixed; inset: 0; background: rgba(17,24,39,.45); z-index: 2000; align-items: center; justify-content: center; padding: 24px; }
+.as-overlay.open { display: flex; }
+.as-sheet { background: var(--white); border-radius: var(--r-xl); width: 100%; max-width: 400px; padding: 24px 24px 32px; box-shadow: var(--shadow-lg); }
+.as-text { font-size: 15px; color: var(--n800); margin-bottom: 20px; line-height: 1.5; }
+.as-action-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px solid var(--n200); }
+.as-save-link { background: none; border: none; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--primary); padding: 0; }
+.as-save-link:disabled { opacity: .6; cursor: not-allowed; }
+.as-cancel-row { display: flex; align-items: center; padding: 14px 0; border-top: 1px solid var(--n200); }
+.as-cancel-link { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--n700); padding: 0; }
+
+/* ── Checker dropdown ── */
+.checker-select-trigger { background: var(--n100); border-radius: var(--r-md); padding: 10px 14px; cursor: pointer; transition: background .15s; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+.checker-select-trigger:hover { background: #EBEBEB; }
+.checker-select-label { font-size: 14px; color: var(--n500); margin-bottom: 3px; }
+.checker-select-val { font-size: 14px; color: var(--n900); }
+.checker-select-placeholder { font-size: 14px; color: var(--n400); }
+.checker-select-arrow { color: var(--n400); font-size: 12px; flex-shrink: 0; margin-left: 8px; }
+.checker-dd-list { position: fixed; border: 1px solid var(--n200); border-radius: var(--r-md); background: var(--white); box-shadow: var(--shadow-md); max-height: 260px; overflow-y: auto; z-index: 9999; display: none; }
+.checker-dd-list.open { display: block; }
+.checker-dd-item { padding: 12px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--n100); transition: background .1s; }
+.checker-dd-item:last-child { border-bottom: none; }
+.checker-dd-item:hover { background: var(--n100); }
+.checker-dd-name { font-size: 14px; font-weight: 600; color: var(--n900); margin-bottom: 2px; }
+.checker-dd-desc { font-size: 14px; font-weight: 400; color: var(--n500); line-height: 1.4; }
+.checker-dd-check { color: #16A34A; font-size: 18px; flex-shrink: 0; margin-top: 2px; opacity: 0; transition: opacity .1s; }
+.checker-dd-item.selected .checker-dd-check { opacity: 1; }
+
+/* ── Spinner ── */
+.spin { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+.spin-purple { width: 16px; height: 16px; border: 2px solid var(--primary-bg); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Toast ── */
+.toast { position: fixed; top: 56px; left: 0; right: 0; background: var(--teal); color: #fff; padding: 12px 24px; text-align: center; font-size: 14px; font-weight: 500; z-index: 9999; transform: translateY(-100%); opacity: 0; transition: transform .3s, opacity .3s; pointer-events: none; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.info-note { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--r-sm); padding: 10px 12px; font-size: 14px; color: #B45309; margin-top: 8px; }
+
+/* ── Auto-rejections ── */
+.ar-block { margin-bottom: 10px; }
+.ar-block > .flat-toggle-box { margin-bottom: 0; }
+.ar-block.is-disabled > .flat-toggle-box { opacity: 0.5; pointer-events: none; }
+.ar-disabled-hint { display: none; font-size: 13px; color: var(--n500); padding: 8px 16px 4px; }
+.ar-block.is-disabled > .ar-disabled-hint { display: block; }
+.ar-fields { margin-top: 8px; }
+.ar-nested-row { display: flex; align-items: flex-start; gap: 16px; padding-bottom: 14px; margin-bottom: 14px; }
+.ar-nested-left { flex: 1; }
+.ar-nested-label { font-size: 14px; font-weight: 500; color: var(--n800); margin-bottom: 3px; }
+.ar-nested-sub { font-size: 13px; color: var(--n500); }
+.ar-tpl-title { font-size: 14px; font-weight: 500; color: var(--n700); margin-bottom: 10px; }
+.ar-radio-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.ar-radio-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--n800); background: var(--n100); border-radius: var(--r-md); padding: 14px 16px; transition: background .15s; }
+.ar-radio-row:hover { background: #EBEBEB; }
+.ar-radio-row input[type="radio"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+.ar-tpl-error { font-size: 13px; color: var(--danger); margin-top: 4px; margin-bottom: 4px; }
+.ar-preview-link { display: inline-block; font-size: 14px; color: var(--primary); text-decoration: none; margin-top: 6px; }
+.ar-preview-link:hover { text-decoration: underline; }
+.ar-hint { font-size: 13px; color: var(--n500); margin-top: 4px; padding: 0 2px; }
+.ar-rules { background: var(--n100); border-radius: var(--r-md); padding: 14px 16px; margin-top: 12px; }
+.ar-rules-title { font-size: 14px; font-weight: 600; color: var(--n700); margin-bottom: 4px; }
+.ar-rules-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+.ar-rules-label { font-size: 14px; color: var(--n700); }
+.ar-stage-dd-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; font-size: 14px; transition: background .1s; border-bottom: 1px solid var(--n100); }
+.ar-stage-dd-item:last-child { border-bottom: none; }
+.ar-stage-dd-item:hover { background: var(--n100); }
+.ar-stage-dd-item.selected { color: var(--primary); }
+.ar-stage-check { color: var(--primary); font-size: 14px; }
+
+/* ── Template accordion ── */
+.ar-tpl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.ar-tpl-current { font-size: 14px; color: var(--n500); }
+.ar-tpl-expand-link { font-size: 14px; color: var(--primary); background: none; border: none; cursor: pointer; padding: 0; font-family: var(--font); font-weight: 500; white-space: nowrap; }
+.ar-tpl-expand-link:hover { text-decoration: underline; }
+.ar-reason-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F5F5F5; }
+.ar-reason-row:last-child { border-bottom: none; }
+.ar-reason-label { flex: 1; font-size: 14px; color: var(--n800); min-width: 0; }
+.ar-reason-input { width: 200px; flex-shrink: 0; }
+
+/* ── Survey ── */
+.survey-score-row { display:flex; align-items:center; gap:10px; background:var(--n100); border-radius:var(--r-md); padding:12px 16px; margin-bottom:8px; flex-wrap:wrap; }
+.survey-score-input { width:52px; background:white; border:1.5px solid var(--n300); border-radius:6px; padding:3px 7px; font-size:14px; font-family:inherit; text-align:center; transition:border-color .15s; }
+.survey-score-input:focus { outline:none; border-color:var(--primary); }
+.survey-req-badge { cursor:pointer; user-select:none; transition:opacity .15s; flex-shrink:0; }
+.survey-req-badge:hover { opacity:0.8; }
+.survey-cond-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #F5F5F5; }
+.survey-cond-row:last-child { border-bottom:none; }
+.survey-cond-info { flex:1; min-width:0; }
+.survey-cond-text { font-size:14px; font-weight:500; color:var(--n900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.survey-edit-btn { width:32px; height:32px; border:none; background:none; cursor:pointer; color:var(--n400); display:flex; align-items:center; justify-content:center; border-radius:var(--r-sm); transition:.15s; flex-shrink:0; }
+.survey-edit-btn:hover { background:var(--n100); color:var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- ════════════ HEADER ════════════ -->
+<header class="header">
+  <div class="app-chip" onclick="go('list')" style="cursor:pointer;">
+    <div class="app-chip-icon">B</div>
+    HR-ассистент
+  </div>
+  <nav class="header-nav">
+    <span class="nav-link" onclick="go('list')">Поиск кандидатов</span>
+    <span class="nav-link">Собеседования</span>
+    <span class="nav-link">Трудоустройство</span>
+  </nav>
+  <div class="header-user">
+    <div class="user-photo">НО</div>
+    Иванова А.
+    <button class="logout-btn" title="Выйти">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ════════════ VIEW: LIST ════════════ -->
+<div id="v-list" class="view active">
+  <div class="main">
+    <div class="list-top-row">
+      <button class="btn btn-primary btn-sm" onclick="openModal('m-add-vac')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Добавить вакансию
+      </button>
+    </div>
+    <div class="inline-tabs" id="tabs-bar" style="margin-bottom:20px;">
+      <button class="itab active" data-tab="my"   onclick="switchTab(this,'my')">Созданные мной</button>
+      <button class="itab"        data-tab="all"  onclick="switchTab(this,'all')">Все</button>
+      <button class="itab"        data-tab="arch" onclick="switchTab(this,'arch')">Архив</button>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search" type="text" placeholder="Поиск" oninput="renderList()">
+    </div>
+    <div id="list-container"></div>
+  </div>
+</div>
+
+<!-- ════════════ VIEW: VACANCY ════════════ -->
+<div id="v-vac" class="view">
+  <button class="back-btn-sq" onclick="go('list')" style="position:fixed; left:24px; top:80px; z-index:10;">←</button>
+  <div class="vac-page-wrap">
+    <h1 class="vac-page-title" id="vac-page-title" style="margin:0 0 10px;"></h1>
+    <div id="vac-content"></div>
+  </div>
+</div>
+
+<!-- ════════════ VIEW: SETTINGS ════════════ -->
+<div id="v-settings" class="view">
+  <div class="settings-wrap">
+
+    <div class="settings-sidebar">
+      <button class="back-btn-sq" onclick="go('vac')">←</button>
+      <div class="settings-sidebar-title">Настройка подбора</div>
+      <div class="settings-sidebar-sub" id="settings-sub"></div>
+    </div>
+
+    <div style="max-width:780px; margin:0 auto; padding:32px 24px 120px;">
+
+      <!-- 1. Requirements -->
+      <div class="flat-section">
+        <div class="flat-section-title">
+          Требования к кандидатам
+          <div class="q-icon" data-tooltip="Требования, по которым система оценивает кандидатов">?</div>
+        </div>
+        <div class="flat-sub">Обязательные</div>
+        <div id="req-mandatory"></div>
+        <button class="add-pill" onclick="openAddReq('mandatory')">
+          <span class="add-pill-plus">+</span> Добавить
+        </button>
+        <div style="margin-top:24px;">
+          <div class="flat-sub">Необязательные</div>
+          <div id="req-optional"></div>
+          <button class="add-pill" onclick="openAddReq('optional')">
+            <span class="add-pill-plus">+</span> Добавить
+          </button>
+        </div>
+      </div>
+
+      <!-- SURVEY: Проверки по опросу HH -->
+      <div class="flat-section">
+        <div class="flat-section-title">
+          Проверки по опросу HH
+          <div class="q-icon" data-tooltip="Если к вакансии на HH прикреплён опрос, система получит ответы через API и учтёт их в скоринге наравне с проверками резюме">?</div>
+        </div>
+
+        <div class="flat-toggle-box" onclick="if(!event.target.closest('.toggle'))document.getElementById('survey-main-toggle').click()">
+          <span class="flat-toggle-label">Учитывать ответы на опрос HH</span>
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="survey-main-toggle" onchange="onSurveyMainToggle(this.checked)">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div id="survey-expanded" style="display:none; margin-top:12px;">
+          <div class="flat-sub" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;">Балл HH <div class="q-icon" data-tooltip="Открытые вопросы HH засчитываются как правильные — балл может быть завышен при наличии свободных ответов">?</div></div>
+          <div class="survey-score-row" id="survey-score-row">
+            <label class="toggle" style="flex-shrink:0;" onclick="event.stopPropagation()">
+              <input type="checkbox" id="survey-score-enabled" onchange="onSurveyScoreEnabled(this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+            <span style="font-size:14px;color:var(--n800);flex-shrink:0;">Балл HH ≥</span>
+            <input type="number" id="survey-score-num" class="survey-score-input" min="1" max="100" value="60" onclick="event.stopPropagation()">
+            <span style="font-size:14px;color:var(--n500);flex-shrink:0;">из 100</span>
+            <span id="survey-score-req-badge" class="badge badge-gray survey-req-badge" onclick="toggleSurveyScoreReq()">необязательное</span>
+          </div>
+
+          <div class="flat-sub">Обязательные</div>
+          <div id="survey-conditions-mandatory"></div>
+          <button class="add-pill" onclick="openAddCondition(true)">
+            <span class="add-pill-plus">+</span> Добавить
+          </button>
+          <div style="margin-top:24px;">
+            <div class="flat-sub">Необязательные</div>
+            <div id="survey-conditions-optional"></div>
+            <button class="add-pill" onclick="openAddCondition(false)">
+              <span class="add-pill-plus">+</span> Добавить
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /SURVEY -->
+
+      <!-- 2. Review toggle -->
+      <div class="flat-section">
+        <div class="flat-section-title">
+          Разбирать отклики
+          <div class="q-icon" data-tooltip="Автоматическая оценка кандидатов по требованиям">?</div>
+        </div>
+        <div class="flat-toggle-box" onclick="if(!event.target.closest('.toggle'))document.getElementById('review-toggle').click()">
+          <span class="flat-toggle-label">Включить разбор откликов</span>
+          <label class="toggle">
+            <input type="checkbox" id="review-toggle" onchange="onToggle(this.checked)">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div id="review-fields" style="display:none;">
+          <div class="flat-field-group">
+            <div class="flat-field-box" id="ms-statuses-wrap" onclick="toggleMs('statuses')">
+              <div class="flat-field-label">С какого статуса в Хантфлоу брать кандидатов <span class="flat-field-arrow">▾</span></div>
+              <div class="ms-wrap">
+                <div class="ms-box" id="ms-statuses-box"></div>
+                <div class="ms-dropdown" id="ms-statuses-dd"></div>
+              </div>
+              <div class="flat-field-underline" id="ul-statuses"></div>
+              <div class="flat-field-error" id="err-statuses" style="display:none;">Выбери хотя бы один статус</div>
+            </div>
+          </div>
+          <div class="flat-field-group">
+            <div class="flat-field-box" id="ms-sources-wrap" onclick="toggleMs('sources')">
+              <div class="flat-field-label">Какие источники кандидатов брать для скоринга <span class="flat-field-arrow">▾</span></div>
+              <div class="ms-wrap">
+                <div class="ms-box" id="ms-sources-box"></div>
+                <div class="ms-dropdown" id="ms-sources-dd"></div>
+              </div>
+              <div class="flat-field-underline" id="ul-sources"></div>
+              <div class="flat-field-error" id="err-sources" style="display:none;">Выбери хотя бы один источник</div>
+            </div>
+          </div>
+          <div class="flat-field-group">
+            <div class="flat-field-box disabled" id="field-approved">
+              <div class="flat-field-label">Куда перенести одобренных кандидатов <span class="flat-field-arrow">▾</span></div>
+              <div class="flat-field-placeholder" id="approved-value">Одобрен ML</div>
+              <div class="flat-field-underline" id="ul-approved"></div>
+              <div class="flat-field-error" id="err-approved" style="display:none;">Создай статус в Хантфлоу «Одобрен ML»</div>
+            </div>
+          </div>
+          <div class="flat-field-group">
+            <div class="flat-field-box disabled" id="field-rejected">
+              <div class="flat-field-label">Куда перенести отклонённых кандидатов <span class="flat-field-arrow">▾</span></div>
+              <div class="flat-field-placeholder" id="rejected-value">Отклонен ML</div>
+              <div class="flat-field-underline" id="ul-rejected"></div>
+              <div class="flat-field-error" id="err-rejected" style="display:none;">Создай статус в Хантфлоу «Отклонен ML»</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Anti-fraud -->
+      <div class="flat-section">
+        <div class="flat-section-title">
+          Антифрод-система
+          <div class="q-icon" data-tooltip="Антифрод-система">?</div>
+        </div>
+        <div class="wolves-status" id="wolves-status" style="display:none;">Работает</div>
+        <div class="info-box">
+          <svg class="info-box-icon" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#835DE1" opacity=".15"/><line x1="12" y1="8" x2="12" y2="12" stroke="#835DE1" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#835DE1" stroke-width="2" stroke-linecap="round"/></svg>
+          <span id="wolves-info-text">Чтобы включить обратись в канал поддержки HR-ассистента</span>
+        </div>
+      </div>
+
+      <!-- 4. Auto-rejections -->
+      <div class="flat-section">
+        <div class="flat-section-title">
+          Автоматизация отказов
+          <div class="q-icon" data-tooltip="Автоотказы отправляют письма кандидатам от имени компании. Убедись, что шаблоны согласованы с HR-брендом перед включением">?</div>
+        </div>
+
+        <!-- Block 1 -->
+        <div class="ar-block" id="ar-b1-block">
+          <div class="flat-toggle-box" onclick="arB1HeaderClick()">
+            <span class="flat-toggle-label">Автоотказ отклонённым после скоринга</span>
+            <label class="toggle" onclick="event.stopPropagation()">
+              <input type="checkbox" id="ar-b1-toggle" onchange="onB1Toggle(this.checked)" disabled>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="ar-disabled-hint" id="ar-b1-hint">Сначала включи авторазбор откликов</div>
+          <div id="ar-b1-fields" class="ar-fields" style="display:none;">
+            <!-- Nested toggle -->
+            <div class="flat-toggle-box" onclick="if(!event.target.closest('.toggle'))document.getElementById('ar-b1-move-toggle').click()" style="margin-bottom:14px;">
+              <div>
+                <div class="flat-toggle-label">Переносить кандидатов в статус «Отказ»</div>
+                <div style="font-size:13px;color:var(--n500);margin-top:3px;">Причина выбирается автоматически на основе требований</div>
+              </div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" id="ar-b1-move-toggle">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Block 2 -->
+        <div class="ar-block" id="ar-b2-block">
+          <div class="flat-toggle-box" onclick="if(!event.target.closest('.toggle'))document.getElementById('ar-b2-toggle').click()">
+            <span class="flat-toggle-label">Автоотказ при переносе вручную на этап «Отказ»</span>
+            <label class="toggle" onclick="event.stopPropagation()">
+              <input type="checkbox" id="ar-b2-toggle" onchange="onB2Toggle(this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div id="ar-b2-fields" class="ar-fields" style="display:none;">
+            <!-- Sources multiselect -->
+            <div class="flat-field-group">
+              <div class="flat-field-box" id="ar-ms-sources-wrap" onclick="toggleArMs()">
+                <div class="flat-field-label">Источники для автоотказа <span class="flat-field-arrow">▾</span></div>
+                <div class="ms-wrap">
+                  <div class="ms-box" id="ar-ms-sources-box"></div>
+                  <div class="ms-dropdown" id="ar-ms-sources-dd"></div>
+                </div>
+                <div class="ar-hint" style="margin-top:6px;">Если не выбрано — применяется ко всем источникам</div>
+              </div>
+            </div>
+            <!-- Stage dropdown -->
+            <div class="flat-field-group">
+              <div class="flat-field-box" id="ar-stage-wrap" onclick="toggleArStage()">
+                <div class="flat-field-label"><span>Этап, после которого не отправлять автоотказ <span style="color:var(--danger);">*</span></span><span class="flat-field-arrow">▾</span></div>
+                <div id="ar-stage-val" class="flat-field-placeholder">Выберите этап</div>
+                <div class="ms-wrap">
+                  <div class="ms-dropdown" id="ar-stage-dd" style="min-width:260px;"></div>
+                </div>
+              </div>
+              <div class="flat-field-error" id="err-ar-stage" style="display:none;">Обязательное поле — выберите этап</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Template + Rules (visible when at least one auto-rejection is enabled) -->
+        <div id="ar-rules-section" style="display:none;">
+          <!-- Shared template -->
+          <div class="flat-field-group">
+            <div class="flat-field-box" onclick="go('tpl-settings')">
+              <div class="flat-field-label">Шаблон отказа <span class="flat-field-arrow">›</span></div>
+              <div id="ar-tpl-summary"><span class="flat-field-placeholder">Базовый шаблон</span></div>
+            </div>
+          </div>
+          <a href="#" class="ar-preview-link" onclick="return false;">Посмотреть пример отказа →</a>
+          <!-- Rules -->
+          <div class="ar-tpl-title" style="margin-bottom:8px;margin-top:16px;">Правила отказа</div>
+          <div class="flat-field-group">
+            <div class="flat-field-box" style="cursor:default;">
+              <div class="flat-field-label">Время отправки</div>
+              <div class="flat-field-value">с 9 до 18 МСК</div>
+            </div>
+          </div>
+          <div class="flat-field-group">
+            <div class="flat-field-box" id="ar-delay-wrap" onclick="toggleArDelay()">
+              <div class="flat-field-label">Задержка отправки <span class="flat-field-arrow">▾</span></div>
+              <div id="ar-delay-val" class="flat-field-value">24 часа</div>
+              <div class="ms-wrap">
+                <div class="ms-dropdown" id="ar-delay-dd" style="min-width:180px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /flat-section auto-rejections -->
+
+    </div>
+  </div><!-- /settings-wrap -->
+
+  <!-- Fixed save footer -->
+  <div class="settings-save-footer">
+    <div class="settings-save-footer-inner">
+      <button class="btn btn-primary btn-lg" onclick="openAS()" style="min-width:300px;">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ VIEW: TEMPLATE SETTINGS ════════════ -->
+<div id="v-tpl-settings" class="view">
+  <div class="settings-wrap">
+    <div class="settings-sidebar">
+      <button class="back-btn-sq" onclick="go('settings')">←</button>
+      <div class="settings-sidebar-title">Шаблоны отказа</div>
+      <div class="settings-sidebar-sub" id="tpl-settings-sub"></div>
+      <div style="margin-top:16px;font-size:13px;color:var(--n500);line-height:1.5;">Укажи шаблон для нужных причин. Для остальных будет использоваться базовый шаблон.</div>
+    </div>
+    <div style="max-width:780px; margin:0 auto; padding:32px 24px 120px;">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="tpl-search" type="text" placeholder="Поиск по причинам" oninput="renderTplList()">
+      </div>
+      <div id="tpl-reasons-list"></div>
+    </div>
+  </div>
+  <div class="settings-save-footer">
+    <div class="settings-save-footer-inner">
+      <button class="btn btn-primary btn-lg" onclick="saveTplSettings()" style="min-width:300px;">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Survey condition ════════════ -->
+<div class="overlay" id="m-survey-cond" onclick="overlayClick(event,'m-survey-cond')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="m-survey-cond-title">Добавить условие</div>
+      <button class="modal-x" onclick="closeModal('m-survey-cond')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field-hint" style="margin-bottom:10px;margin-top:0;">Напиши условие на естественном языке — AI оценит ответы кандидата по нему</div>
+      <div class="modal-field" id="survey-cond-field">
+        <div class="modal-field-label">Условие</div>
+        <textarea id="survey-cond-text" placeholder="напр. «Кандидат согласен на командировки»" style="min-height:80px;" oninput="clearSurveyCondErr()"></textarea>
+        <div class="modal-field-error" id="err-survey-cond" style="display:none;">Введи текст условия</div>
+      </div>
+      <div class="flat-toggle-box" onclick="if(!event.target.closest('.toggle'))document.getElementById('survey-cond-req-toggle').click()" style="margin-top:4px;">
+        <span class="flat-toggle-label" style="font-size:14px;">Обязательное условие</span>
+        <label class="toggle" onclick="event.stopPropagation()">
+          <input type="checkbox" id="survey-cond-req-toggle" checked>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;" id="survey-cond-save-btn" onclick="saveSurveyCondition()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Add vacancy ════════════ -->
+<div class="overlay" id="m-add-vac" onclick="overlayClick(event,'m-add-vac')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Добавление вакансии</div>
+      <button class="modal-x" onclick="closeModal('m-add-vac')">×</button>
+    </div>
+    <div class="modal-body" id="m-add-vac-body">
+      <div class="modal-field" id="field-vac-url">
+        <div class="modal-field-label">Ссылка на Хантфлоу</div>
+        <input id="vac-url" type="text" placeholder="Введи" oninput="clearVacErr()">
+        <div class="modal-field-error" id="err-vac-url" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="modal-foot" id="m-add-vac-foot">
+      <button class="btn btn-primary" style="width:100%;" onclick="submitAddVac()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Add requirement ════════════ -->
+<div class="overlay" id="m-req" onclick="overlayClick(event,'m-req')">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="m-req-title">Добавление требования</div>
+      <button class="modal-x" onclick="closeModal('m-req')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="checker-select-trigger" id="checker-select-trigger" onclick="toggleCheckerDd(event)">
+        <div>
+          <div class="checker-select-label">Требование</div>
+          <div id="checker-select-val" class="checker-select-placeholder">Выбрать тип...</div>
+        </div>
+        <span class="checker-select-arrow">▾</span>
+      </div>
+      <div class="checker-dd-list" id="checker-dd-list"></div>
+      <div id="checker-desc-wrap" style="display:none;">
+        <div class="checker-desc" id="checker-desc"></div>
+      </div>
+      <div id="checker-params"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" style="width:100%;" id="req-save-btn" onclick="saveReq()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ACTION SHEET ════════════ -->
+<div class="as-overlay" id="as-save" onclick="asOverlayClick(event)">
+  <div class="as-sheet">
+    <div class="as-text">Точно хочешь сохранить, настройки сразу заработают</div>
+    <div class="as-action-row">
+      <button class="as-save-link" id="as-confirm-btn" onclick="confirmSave()">Сохранить</button>
+      <div class="spin-purple" id="as-spinner" style="display:none;"></div>
+    </div>
+    <div class="as-cancel-row">
+      <button class="as-cancel-link" onclick="closeAS()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const SURVEY_DEFAULT = () => ({
+  on: false,
+  score: { enabled: false, min: 60, required: false },
+  conditions: []
+});
+
+const AR_DEFAULT = () => ({
+  b1: { on:false, moveToReject:false },
+  b2: { on:false, sources:[], noStage:null },
+  reasonTpls: {},
+  delay: '24h'
+});
+
+let vacancies = [
+  { id:1, title:'Системный аналитик',        owner:'me',    ownerName:'Иванова А.',      status:'active', features:['review','wolves','autorej','hh-survey'], added:'10 апр 2026', url:'https://huntflow.ru/v/101' },
+  { id:2, title:'Product Manager (IT)',       owner:'me',    ownerName:'Иванова А.',      status:'active', features:['review','autorej'],          added:'3 апр 2026',  url:'https://huntflow.ru/v/102' },
+  { id:3, title:'Data Scientist',             owner:'other', ownerName:'Дмитрий Борисов', status:'active', features:['wolves'],                    added:'28 мар 2026', url:'https://huntflow.ru/v/103' },
+  { id:4, title:'Frontend Developer (React)', owner:'other', ownerName:'Светлана Петрова', status:'active', features:[],                           added:'22 мар 2026', url:'https://huntflow.ru/v/104' },
+  { id:5, title:'Java Developer (Senior)',    owner:'me',    ownerName:'Иванова А.',      status:'paused', features:[],                            added:'15 мар 2026', url:'https://huntflow.ru/v/105' },
+  { id:6, title:'DevOps Engineer',            owner:'other', ownerName:'Михаил Соколов',  status:'paused', features:[],                            added:'8 мар 2026',  url:'https://huntflow.ru/v/106' },
+];
+
+let reqs = {
+  1: {
+    mandatory:[
+      { id:'m1', type:'exp_total', label:'Проверка стажа работы', params:'от 24 до 120 месяцев', icon:'ОС', rawP1:'24', rawP2:'120' },
+      { id:'m2', type:'llm',       label:'Свой фильтр (AI)',       params:'Опыт разработки на Python + FastAPI ≥ 2 лет', icon:'AI', rawP1:'Опыт разработки на Python + FastAPI ≥ 2 лет', rawP2:'' },
+    ],
+    optional:[
+      { id:'o1', type:'salary', label:'Зарплатные ожидания', params:'от 150 000 до 350 000 ₽', icon:'ЗП', rawP1:'150000', rawP2:'350000' },
+    ],
+  },
+  2: {
+    mandatory:[
+      { id:'m3', type:'exp_total',   label:'Проверка стажа работы', params:'от 36 до 240 месяцев', icon:'ОС', rawP1:'36', rawP2:'240' },
+      { id:'m4', type:'citizenship', label:'Гражданство',            params:'Россия',                icon:'ГР', rawP1:'Россия', rawP2:'' },
+    ],
+    optional:[],
+  },
+  3:{ mandatory:[], optional:[] }, 4:{ mandatory:[], optional:[] },
+  5:{ mandatory:[], optional:[] }, 6:{ mandatory:[], optional:[] },
+};
+
+let settings = {
+  1:{ on:true,  statuses:['Новые'], sources:['HeadHunter','Сайт','Реферальная программа'], approvedOk:true, rejectedOk:true, wolves:true,
+      ar:{ b1:{on:true, moveToReject:true}, b2:{on:false, sources:[], noStage:null}, reasonTpls:{}, delay:'24h' } },
+  2:{ on:true,  statuses:['Новые'], sources:['HeadHunter','Сайт'], approvedOk:true, rejectedOk:true, wolves:false,
+      ar:{ b1:{on:false, moveToReject:false}, b2:{on:true, sources:['HeadHunter','SuperJob'], noStage:'Созвонились'}, reasonTpls:{}, delay:'4h' } },
+  3:{ on:false, statuses:[], sources:[], approvedOk:true, rejectedOk:true, wolves:true,  ar:AR_DEFAULT() },
+  4:{ on:false, statuses:[], sources:[], approvedOk:true, rejectedOk:true, wolves:false, ar:AR_DEFAULT() },
+  5:{ on:false, statuses:[], sources:[], approvedOk:true, rejectedOk:true, wolves:false, ar:AR_DEFAULT() },
+  6:{ on:false, statuses:[], sources:[], approvedOk:true, rejectedOk:true, wolves:false, ar:AR_DEFAULT() },
+};
+
+// Survey settings
+Object.keys(settings).forEach(id => { settings[id].survey = SURVEY_DEFAULT(); });
+settings[1].survey = {
+  on: true,
+  score: { enabled: true, min: 72, required: true },
+  conditions: [
+    { id: 'sc1', text: 'Кандидат согласен на командировки', required: true },
+    { id: 'sc2', text: 'Опыт в финтехе или банковской сфере', required: false },
+  ]
+};
+
+const ALL_STATUSES = [
+  'Новые','Резерв с сайта','Одобрен AI','Одобрен ML','Отклонен ML',
+  'Холод новые','Реферальная программа новые','Отклонён AI','Заигнорил AI',
+  'Обработан','Бот','Ждёт звонка','ОСК','Просмотрен','Валидация',
+  'Телефонное интервью (HR-скрининг)','Созвонились','Перезвонить',
+  'ТИ состоялось','Рассмотрение скрининга','Первое интервью',
+  'Первое интервью состоялось','Техническое интервью',
+  'Техническое интервью состоялось','Тестирование','Проверка тестового',
+  'Второе интервью','Интервью с комьюнити','Интервью с заказчиком',
+  'Интервью состоялось','Дополнительная встреча с командой',
+  'Пре-оффер','Проверка СБ','Оффер','Оффер принят',
+  'Вышел на работу','Исп. срок пройден','Резерв','Уволен',
+];
+const ALL_SOURCES = [
+  'HeadHunter','SuperJob','Работа.ру','Авито Работа','Зарплата.ру',
+  'LinkedIn','ВКонтакте','Телеграм','Хабр Карьера',
+  'Сайт','Лендинг стажировки',
+  'Реферальная программа','Внутренний кандидат','Перевод внутри компании',
+  'Холодный поиск рекрутером','Кадровое агентство','Хедхантинг',
+  'Ярмарка вакансий','День открытых дверей','Университет / колледж',
+  'Стажировка','Практика','Другое',
+];
+const AR_STAGES = [
+  'Созвонились','ТИ состоялось',
+  'Телефонное интервью (HR-скрининг)',
+  'Первое интервью','Первое интервью состоялось',
+  'Техническое интервью','Техническое интервью состоялось',
+  'Тестирование','Проверка тестового',
+  'Второе интервью','Интервью с комьюнити',
+  'Интервью с заказчиком','Интервью состоялось',
+  'Дополнительная встреча с командой',
+  'Пре-оффер','Оффер','Оффер принят',
+];
+
+const CHECKERS = {
+  llm:           { label:'Свой фильтр (AI)',               icon:'AI', desc:'AI интерпретирует требование самостоятельно. Используй для стека, навыков и нестандартных критериев.',
+    html:()=>`<div style="margin-bottom:10px;"><a href="#" class="link" onclick="return false;">Что это такое и как с этим работать →</a></div><div class="modal-field"><div class="modal-field-label">Текст требования</div><textarea id="p1" placeholder="напр. «Опыт разработки на Python + FastAPI ≥ 2 лет»"></textarea></div>`,
+    fmt:()=>{ const d=v('p1'); return d?d.slice(0,65)+(d.length>65?'…':''):''; } },
+  exp_total:     { label:'Проверка стажа работы',          icon:'ОС', desc:'Проверка стажа работы — сверка данных о периодах трудовой деятельности.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Стаж, в мес.</div><div class="modal-field-row cols-2"><div><span style="font-size:13px;color:var(--n500);">От</span> <input id="p1" type="number" placeholder="1" style="width:80px;"></div><div><span style="font-size:13px;color:var(--n500);">До</span> <input id="p2" type="number" placeholder="12" style="width:80px;"></div></div></div>`,
+    fmt:()=>{ const a=v('p1'),b=v('p2'); return [a&&`от ${a}`,b&&`до ${b}`].filter(Boolean).join(' ')+' месяцев'; } },
+  exp_pos:       { label:'Опыт на конкретной позиции',     icon:'ПО', desc:'Проверяет опыт на конкретной должности.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Специализация</div><input id="p1" type="text" placeholder="напр. Системный аналитик"></div><div class="modal-field"><div class="modal-field-label">Минимум, мес.</div><input id="p2" type="number" placeholder="напр. 12"></div>`,
+    fmt:()=>{ const s=v('p1'),m=v('p2'); return [s,m&&`от ${m} мес.`].filter(Boolean).join(', '); } },
+  salary:        { label:'Зарплатные ожидания',            icon:'ЗП', desc:'Проверяет, что зарплатные ожидания попадают в диапазон.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Диапазон, ₽</div><div class="modal-field-row cols-2"><div><span style="font-size:13px;color:var(--n500);">От</span> <input id="p1" type="number" placeholder="100000" style="width:100px;"></div><div><span style="font-size:13px;color:var(--n500);">До</span> <input id="p2" type="number" placeholder="350000" style="width:100px;"></div></div></div>`,
+    fmt:()=>{ const f=n=>n?Number(n).toLocaleString('ru-RU')+' ₽':''; const a=v('p1'),b=v('p2'); return [a&&`от ${f(a)}`,b&&`до ${f(b)}`].filter(Boolean).join(' '); } },
+  citizenship:   { label:'Гражданство',                    icon:'ГР', desc:'Отклоняет кандидатов с иным гражданством.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Страна</div><input id="p1" type="text" placeholder="напр. Россия"></div>`,
+    fmt:()=>v('p1')||'Россия' },
+  timezone:      { label:'Часовой пояс',                   icon:'ЧП', desc:'Проверяет, что часовой пояс кандидата входит в диапазон UTC.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">UTC диапазон</div><div class="modal-field-row cols-2"><div><span style="font-size:13px;color:var(--n500);">От</span> <input id="p1" type="number" placeholder="+2" style="width:70px;"></div><div><span style="font-size:13px;color:var(--n500);">До</span> <input id="p2" type="number" placeholder="+5" style="width:70px;"></div></div></div>`,
+    fmt:()=>{ const a=v('p1'),b=v('p2'); const s=n=>n>=0?`+${n}`:n; return a&&b?`UTC${s(a)} — UTC${s(b)}`:''; } },
+  job_hop:       { label:'Частая смена работы',            icon:'ЧС', desc:'Отмечает кандидатов, слишком часто меняющих место работы.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Мин. срок на месте, мес.</div><input id="p1" type="number" placeholder="напр. 6"></div>`,
+    fmt:()=>{ const m=v('p1'); return m?`мин. ${m} мес. на месте`:''; } },
+  exp_last:      { label:'Опыт на последнем месте',        icon:'ПМ', desc:'Проверяет, что кандидат проработал на последнем месте не менее N месяцев.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Минимум, мес.</div><input id="p1" type="number" placeholder="напр. 12"></div>`,
+    fmt:()=>{ const m=v('p1'); return m?`от ${m} мес.`:''; } },
+  exp_companies: { label:'Опыт в релевантных компаниях',   icon:'РК', desc:'Проверяет опыт в компаниях нужного профиля.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Описание компаний</div><textarea id="p1" placeholder="напр. банки из топ-20, FinTech-компании"></textarea></div>`,
+    fmt:()=>{ const d=v('p1'); return d?d.slice(0,55)+(d.length>55?'…':''):''; } },
+  hh_spec:       { label:'Специализация в HeadHunter',     icon:'HH', desc:'Проверяет специализацию кандидата по ID.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">ID специализаций (через запятую)</div><input id="p1" type="text" placeholder="напр. 1.221, 1.248"></div>`,
+    fmt:()=>{ const d=v('p1'); return d?`HH: ${d}`:''; } },
+  title:         { label:'Соответствие заголовка резюме',  icon:'ЗГ', desc:'Проверяет, что заголовок резюме соответствует целевому.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Целевой заголовок</div><input id="p1" type="text" placeholder="напр. Системный аналитик"></div>`,
+    fmt:()=>v('p1')||'' },
+  education:     { label:'Профильное образование',         icon:'ОБ', desc:'Проверяет наличие профильного высшего образования.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Описание образования</div><textarea id="p1" placeholder="напр. техническое образование, математика или CS"></textarea></div>`,
+    fmt:()=>{ const d=v('p1'); return d?d.slice(0,55)+(d.length>55?'…':''):''; } },
+  univ_rank:     { label:'Рейтинг университета',           icon:'УН', desc:'Использует встроенный список топ-100 QS.', html:()=>``, fmt:()=>'Топ-100 QS' },
+  age:           { label:'Возраст',                        icon:'ВЗ', desc:'Проверяет, что возраст кандидата попадает в диапазон.',
+    html:()=>`<div class="modal-field"><div class="modal-field-label">Возраст, лет</div><div class="modal-field-row cols-2"><div><span style="font-size:13px;color:var(--n500);">От</span> <input id="p1" type="number" placeholder="22" style="width:70px;"></div><div><span style="font-size:13px;color:var(--n500);">До</span> <input id="p2" type="number" placeholder="55" style="width:70px;"></div></div></div>`,
+    fmt:()=>{ const a=v('p1'),b=v('p2'); return [a&&`от ${a}`,b&&`до ${b}`].filter(Boolean).join(' ')+(a||b?' лет':''); } },
+  forbidden:     { label:'Работа в запрещённой компании',  icon:'СЛ', desc:'Использует автоматически обновляемый внутренний стоп-лист.', html:()=>``, fmt:()=>'Стоп-лист' },
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let curTab = 'my';
+let curVacId = null;
+let curReqGroup = 'mandatory';
+let editingReqId = null;
+let selStatuses = [];
+let selSources  = [];
+let selectedCheckerType = '';
+let selArSources = [];
+let curArStage = null;
+let curArDelay = '24h';
+let editingConditionId = null;
+
+const AR_DELAY_OPTIONS = [
+  { value:'1h',  label:'1 час' },
+  { value:'2h',  label:'2 часа' },
+  { value:'4h',  label:'4 часа' },
+  { value:'8h',  label:'8 часов' },
+  { value:'24h', label:'24 часа' },
+];
+
+const HF_REJECTION_REASONS = [
+  'Мы. Вакансия закрыта/отмена',
+  'Мы. Вышел в команду / на работу',
+  'Мы. Мотивация',
+  'Мы. Не выполнил метрики',
+  'Мы. Не прошел СБ',
+  'Мы. Не соответствует позиции Мягких навыков',
+  'Мы. Не соответствует позиции Твёрдых навыков',
+  'Мы. Нет технической возможности для работы',
+  'Мы. Перенос на другую вакансию внутри',
+  'Мы. Ротация (ИТ и тд)',
+  'Мы. Условия вакансии. Возраст',
+  'Мы. Условия вакансии. Город проживания',
+  'Мы. Условия вакансии. График',
+  'Мы. Условия вакансии. ЗП',
+  'Мы. Условия вакансии. Пол',
+  'Мы. Юридические сложности в трудоустройстве',
+  'Отказ AI',
+  'Отказ бота МН',
+  'Сам. Компания: Геополитика',
+  'Сам. Компания: Негативные отзывы о Точке',
+  'Сам. Компания: Не смотрит банк',
+  'Сам. Конкуренция: Выбрал другую компанию',
+  'Сам. Конкуренция: Контроффер',
+  'Сам. Не вышел на связь',
+  'Сам. Не сделал тестовое',
+  'Сам. Сейчас не в поиске',
+  'Сам. Семейные обстоятельства/здоровье',
+  'Сам. Условия: График',
+  'Сам. Условия: Долгий процесс прохождения',
+  'Сам. Условия: ЗП (валюта, высокие запросы)',
+  'Сам. Условия: Не интересен продукт',
+  'Сам. Условия: Не хочет работать с клиентами',
+  'Сам. Условия: Расположение',
+  'Сам. Условия: Формат трудоустройства (ИП, ГПХ, IT-компания и тд)',
+  'Сам. Условия: Формат удаленка/офис',
+  'Сам. Условия: Функционал',
+  'Сам. Условия: Холодные звонки/поиск',
+  'Сам. Условия: Хочет руководящую позицию',
+  'Старый трафик МН: Бот',
+  'Тест: Отказ для тестирования гипотез и работу ботов',
+];
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function go(view, id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  if (id) curVacId = id;
+  if (view === 'list') {
+    document.getElementById('v-list').classList.add('active');
+    renderList();
+  } else if (view === 'vac') {
+    document.getElementById('v-vac').classList.add('active');
+    renderVac(curVacId);
+  } else if (view === 'settings') {
+    document.getElementById('v-settings').classList.add('active');
+    renderSettings(curVacId);
+  } else if (view === 'tpl-settings') {
+    document.getElementById('v-tpl-settings').classList.add('active');
+    renderTplSettings(curVacId);
+  }
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════
+// LIST
+// ══════════════════════════════════════════
+function switchTab(el, tab) {
+  document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  curTab = tab;
+  renderList();
+}
+
+function initials(title) {
+  const words = title.split(' ').filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return title.slice(0,2).toUpperCase();
+}
+
+function renderList() {
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  const list = vacancies.filter(v=>{
+    const matchTab = curTab==='my'  ? v.owner==='me' && v.status==='active'
+                   : curTab==='all' ? v.status==='active'
+                   :                  v.status==='paused';
+    return matchTab && v.title.toLowerCase().includes(q);
+  });
+  const c = document.getElementById('list-container');
+  if (!list.length) {
+    c.innerHTML = `<div class="empty"><div class="empty-ico">📋</div><div class="empty-title">Нет вакансий</div><div class="empty-sub">Добавьте вакансию по ссылке из Хантфлоу</div></div>`;
+    return;
+  }
+  c.innerHTML = list.map(vacRow).join('');
+}
+
+function vacRow(v) {
+  const badges = [];
+  if (v.status==='paused') {
+    badges.push(`<span class="badge badge-gray">На паузе</span>`);
+  } else {
+    if (v.features.includes('review'))  badges.push(`<span class="badge badge-teal">Разбирать отклики</span>`);
+    if (v.features.includes('wolves'))  badges.push(`<span class="badge badge-teal">Поиск волков</span>`);
+    if (v.features.includes('autorej')) badges.push(`<span class="badge badge-orange">Автоотказы</span>`);
+    if (v.features.includes('hh-survey')) badges.push(`<span class="badge badge-yellow">Опрос HH</span>`);
+  }
+  return `
+    <div class="vac-row" onclick="go('vac',${v.id})">
+      <div class="vac-circle">${initials(v.title)}</div>
+      <div class="vac-info">
+        <div class="vac-name">${v.title}</div>
+        <div class="vac-feat-badges">${badges.join('')}</div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// VACANCY PAGE
+// ══════════════════════════════════════════
+function renderVac(id) {
+  const v = vacancies.find(x=>x.id===id);
+  if (!v) return;
+  document.getElementById('vac-page-title').textContent = v.title;
+  const active = v.status==='active';
+  const badges = [];
+  if (!active) {
+    badges.push(`<span class="badge badge-gray">На паузе</span>`);
+  } else {
+    if (v.features.includes('review'))  badges.push(`<span class="badge badge-teal">Разбирать отклики</span>`);
+    if (v.features.includes('wolves'))  badges.push(`<span class="badge badge-teal">Поиск волков</span>`);
+    if (v.features.includes('autorej')) badges.push(`<span class="badge badge-orange">Автоотказы</span>`);
+    if (v.features.includes('hh-survey')) badges.push(`<span class="badge badge-yellow">Опрос HH</span>`);
+  }
+  const pauseIcon = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+  const settingsIcon = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+  const extIcon = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+  const resumeIcon = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+  const pauseBtn  = `<button class="btn btn-ghost btn-sm" onclick="pauseVac(${id})">${pauseIcon} На паузу</button>`;
+  const resumeBtn = `<button class="btn btn-primary btn-sm" onclick="resumeVac(${id})">${resumeIcon} Возобновить</button>`;
+  document.getElementById('vac-content').innerHTML = `
+    <div class="vac-page-badges">${badges.join('')}</div>
+    <div class="vac-page-actions">
+      ${active ? pauseBtn : resumeBtn}
+      <button class="btn btn-ghost btn-sm" onclick="go('settings',${id})">${settingsIcon} Настройка подбора</button>
+      <a class="btn btn-ghost btn-sm" href="${v.url}" target="_blank">${extIcon} Вакансия в Хантфлоу</a>
+    </div>`;
+}
+
+function pauseVac(id)  { const v=vacancies.find(x=>x.id===id); if(v){v.status='paused'; renderVac(id); toast('Вакансия поставлена на паузу');} }
+function resumeVac(id) { const v=vacancies.find(x=>x.id===id); if(v){v.status='active'; renderVac(id); toast('Авторазбор возобновлён');} }
+
+// ══════════════════════════════════════════
+// SETTINGS PAGE
+// ══════════════════════════════════════════
+function renderSettings(id) {
+  const v = vacancies.find(x=>x.id===id);
+  const s = settings[id] || { on:false, statuses:[], sources:[], approvedOk:false, rejectedOk:false, wolves:false, ar:AR_DEFAULT() };
+  if (!reqs[id]) reqs[id] = { mandatory:[], optional:[] };
+
+  document.getElementById('settings-sub').textContent = v.title;
+  renderReqs(id);
+
+  const tog = document.getElementById('review-toggle');
+  tog.checked = s.on;
+  document.getElementById('review-fields').style.display = s.on ? 'block' : 'none';
+
+  selStatuses = [...s.statuses];
+  selSources  = [...s.sources];
+  renderMsBox('statuses'); renderMsBox('sources');
+  renderMsDd('statuses');  renderMsDd('sources');
+  renderMLStatus(id);
+
+  const wStatus = document.getElementById('wolves-status');
+  const wText   = document.getElementById('wolves-info-text');
+  if (s.wolves) {
+    wStatus.style.display = 'block';
+    wText.textContent = 'Антифрод-система активна и отслеживает подозрительную активность.';
+  } else {
+    wStatus.style.display = 'none';
+    wText.textContent = 'Чтобы включить обратись в канал поддержки HR-ассистента';
+  }
+
+  renderAutoRej(id);
+  renderSurveyBlock(id);
+}
+
+function renderMLStatus(id) {
+  const s = settings[id] || {};
+  const ae=document.getElementById('err-approved'), re=document.getElementById('err-rejected');
+  const ulA=document.getElementById('ul-approved'), ulR=document.getElementById('ul-rejected');
+  if (s.approvedOk) { ae.style.display='none'; ulA.classList.remove('error'); }
+  else              { ae.style.display='block'; ulA.classList.add('error'); }
+  if (s.rejectedOk) { re.style.display='none'; ulR.classList.remove('error'); }
+  else              { re.style.display='block'; ulR.classList.add('error'); }
+}
+
+function onToggle(on) {
+  document.getElementById('review-fields').style.display = on ? 'block' : 'none';
+  if (on) renderMLStatus(curVacId);
+  syncB1Availability(on);
+  syncRulesVisibility();
+}
+
+// ── Multiselect (review) ──
+function toggleMs(name) {
+  const dd = document.getElementById(`ms-${name}-dd`);
+  const isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  if (!isOpen) { renderMsDd(name); dd.classList.add('open'); }
+}
+function renderMsBox(name) {
+  const arr = name==='statuses' ? selStatuses : selSources;
+  const box = document.getElementById(`ms-${name}-box`);
+  const ul  = document.getElementById(`ul-${name}`);
+  if (!arr.length) {
+    box.innerHTML = `<span class="ms-placeholder">Выбери</span>`;
+    if (ul) ul.classList.remove('error');
+  } else {
+    const MAX=5, visible=arr.slice(0,MAX), rest=arr.length-MAX;
+    let text = visible.join(', ');
+    if (rest>0) text += ` <span style="color:var(--n500);">и ещё ${rest}</span>`;
+    box.innerHTML = `<span style="font-size:14px;color:var(--n900);">${text}</span>`;
+    if (ul) ul.classList.remove('error');
+  }
+}
+function renderMsDd(name) {
+  const all = name==='statuses' ? ALL_STATUSES : ALL_SOURCES;
+  const sel = name==='statuses' ? selStatuses  : selSources;
+  document.getElementById(`ms-${name}-dd`).innerHTML = all.map(s=>{
+    const on=sel.includes(s);
+    return `<div class="ms-opt ${on?'selected':''}" onclick="toggleSel(event,'${name}','${s}')"><div class="ms-check">${on?'✓':''}</div>${s}</div>`;
+  }).join('');
+}
+function toggleSel(e, name, val) {
+  e.stopPropagation();
+  const arr = name==='statuses' ? selStatuses : selSources;
+  const i=arr.indexOf(val); if(i===-1) arr.push(val); else arr.splice(i,1);
+  renderMsBox(name); renderMsDd(name);
+  document.getElementById(`err-${name}`).style.display='none';
+}
+
+// ══════════════════════════════════════════
+// AUTO-REJECTIONS
+// ══════════════════════════════════════════
+function renderAutoRej(id) {
+  const s = settings[id];
+  if (!s.ar) s.ar = AR_DEFAULT();
+  const ar = s.ar;
+
+  syncB1Availability(s.on);
+
+  // Block 1
+  const b1tog = document.getElementById('ar-b1-toggle');
+  b1tog.checked = ar.b1.on;
+  document.getElementById('ar-b1-fields').style.display = ar.b1.on ? 'block' : 'none';
+  document.getElementById('ar-b1-move-toggle').checked = ar.b1.moveToReject;
+  // Block 2
+  const b2tog = document.getElementById('ar-b2-toggle');
+  b2tog.checked = ar.b2.on;
+  document.getElementById('ar-b2-fields').style.display = ar.b2.on ? 'block' : 'none';
+  selArSources = [...ar.b2.sources];
+  renderArMsBox();
+  renderArMsDd();
+  curArStage = ar.b2.noStage;
+  renderArStageVal();
+
+  // Shared template summary
+  renderTplSummary(id);
+
+  // Rules
+  curArDelay = ar.delay || '24h';
+  renderArDelayVal();
+  syncRulesVisibility();
+}
+
+function syncB1Availability(reviewOn) {
+  const block = document.getElementById('ar-b1-block');
+  const tog   = document.getElementById('ar-b1-toggle');
+  if (!block || !tog) return;
+  if (!reviewOn) {
+    block.classList.add('is-disabled');
+    tog.disabled = true;
+    if (tog.checked) { tog.checked = false; document.getElementById('ar-b1-fields').style.display='none'; }
+  } else {
+    block.classList.remove('is-disabled');
+    tog.disabled = false;
+  }
+}
+
+function arB1HeaderClick() {
+  const tog = document.getElementById('ar-b1-toggle');
+  if (!tog.disabled) tog.click();
+}
+
+function onB1Toggle(on) {
+  document.getElementById('ar-b1-fields').style.display = on ? 'block' : 'none';
+  syncRulesVisibility();
+}
+
+function onB2Toggle(on) {
+  document.getElementById('ar-b2-fields').style.display = on ? 'block' : 'none';
+  if (on) { renderArMsBox(); renderArMsDd(); renderArStageVal(); }
+  syncRulesVisibility();
+}
+
+function plur(n, f1, f2, f5) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m100 >= 11 && m100 <= 19) return f5;
+  if (m10 === 1) return f1;
+  if (m10 >= 2 && m10 <= 4) return f2;
+  return f5;
+}
+
+function countConfiguredTpls(id) {
+  const tpls = settings[id]?.ar?.reasonTpls || {};
+  return Object.values(tpls).filter(t => t.name && t.valid).length;
+}
+
+function renderTplSummary(id) {
+  const el = document.getElementById('ar-tpl-summary');
+  if (!el) return;
+  const n = countConfiguredTpls(id);
+  el.innerHTML = n > 0
+    ? `<span class="flat-field-value">Настроено для ${n} ${plur(n, 'причины', 'причин', 'причин')}</span>`
+    : `<span class="flat-field-placeholder">Базовый шаблон</span>`;
+}
+
+function renderTplSettings(id) {
+  const vac = vacancies.find(x => x.id === id);
+  const sub = document.getElementById('tpl-settings-sub');
+  if (sub && vac) sub.textContent = vac.title;
+  const searchEl = document.getElementById('tpl-search');
+  if (searchEl) searchEl.value = '';
+  renderTplList();
+}
+
+function renderTplList() {
+  const id = curVacId;
+  const q = (document.getElementById('tpl-search')?.value || '').toLowerCase();
+  const reasonTpls = settings[id]?.ar?.reasonTpls || {};
+  const filtered = HF_REJECTION_REASONS.filter(r => r.toLowerCase().includes(q));
+  const container = document.getElementById('tpl-reasons-list');
+  if (!container) return;
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-ico">🔍</div><div class="empty-title">Причины не найдены</div></div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(reason => {
+    const key = encodeURIComponent(reason);
+    const val = (reasonTpls[key]?.name || '').replace(/"/g, '&quot;');
+    return `<div class="ar-reason-row">
+      <div class="ar-reason-label">${reason}</div>
+      <div class="ar-reason-input">
+        <div class="modal-field" style="margin:0;">
+          <input type="text" value="${val}" placeholder="шаблон…" style="font-size:13px;"
+            oninput="onTplReasonInput(event,'${key}')">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onTplReasonInput(e, key) {
+  const id = curVacId;
+  if (!settings[id].ar.reasonTpls) settings[id].ar.reasonTpls = {};
+  const name = e.target.value.trim();
+  settings[id].ar.reasonTpls[key] = { name, valid: !!name };
+}
+
+function saveTplSettings() {
+  renderTplSummary(curVacId);
+  go('settings');
+}
+
+// AR Sources multiselect
+function toggleArMs() {
+  const dd = document.getElementById('ar-ms-sources-dd');
+  const isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  if (!isOpen) { renderArMsDd(); dd.classList.add('open'); }
+}
+function renderArMsBox() {
+  const box = document.getElementById('ar-ms-sources-box');
+  if (!box) return;
+  if (!selArSources.length) {
+    box.innerHTML = '<span class="ms-placeholder">Выберите источники</span>';
+  } else {
+    const MAX=3, visible=selArSources.slice(0,MAX), rest=selArSources.length-MAX;
+    let text = visible.join(', ');
+    if (rest>0) text += ` <span style="color:var(--n500);">и ещё ${rest}</span>`;
+    box.innerHTML = `<span style="font-size:14px;color:var(--n900);">${text}</span>`;
+  }
+}
+function renderArMsDd() {
+  const dd = document.getElementById('ar-ms-sources-dd');
+  if (!dd) return;
+  dd.innerHTML = ALL_SOURCES.map(s=>{
+    const on = selArSources.includes(s);
+    return `<div class="ms-opt ${on?'selected':''}" onclick="toggleArSel(event,'${s}')"><div class="ms-check">${on?'✓':''}</div>${s}</div>`;
+  }).join('');
+}
+function toggleArSel(e, val) {
+  e.stopPropagation();
+  const i = selArSources.indexOf(val);
+  if (i===-1) selArSources.push(val); else selArSources.splice(i,1);
+  renderArMsBox(); renderArMsDd();
+}
+
+// AR Stage single-select
+function toggleArStage() {
+  const dd = document.getElementById('ar-stage-dd');
+  const isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  if (!isOpen) { renderArStageDd(); dd.classList.add('open'); }
+}
+function renderArStageVal() {
+  const el = document.getElementById('ar-stage-val');
+  if (!el) return;
+  if (curArStage) { el.className='flat-field-value'; el.textContent=curArStage; }
+  else            { el.className='flat-field-placeholder'; el.textContent='Выберите этап'; }
+}
+function renderArStageDd() {
+  const clearItem = `<div class="ar-stage-dd-item" onclick="selectArStage(event,null)" style="font-style:italic;color:var(--n500);">Не выбрано</div>`;
+  const items = AR_STAGES.map(s=>{
+    const on = curArStage === s;
+    return `<div class="ar-stage-dd-item ${on?'selected':''}" onclick="selectArStage(event,'${s}')">
+      <span>${s}</span>${on?'<span class="ar-stage-check">✓</span>':''}
+    </div>`;
+  }).join('');
+  document.getElementById('ar-stage-dd').innerHTML = clearItem + items;
+}
+function selectArStage(e, stage) {
+  e.stopPropagation();
+  curArStage = stage;
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  renderArStageVal();
+  if (stage) {
+    document.getElementById('ar-stage-wrap').classList.remove('has-error');
+    document.getElementById('err-ar-stage').style.display = 'none';
+  }
+}
+
+function syncRulesVisibility() {
+  const b1On = document.getElementById('ar-b1-toggle')?.checked;
+  const b2On = document.getElementById('ar-b2-toggle')?.checked;
+  const sec = document.getElementById('ar-rules-section');
+  if (sec) sec.style.display = (b1On || b2On) ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════
+// CHECKER COLORS
+// ══════════════════════════════════════════
+const CHECKER_COLORS = {
+  llm:          '#835DE1',
+  exp_total:    '#835DE1',
+  exp_pos:      '#D45858',
+  exp_last:     '#D45858',
+  exp_companies:'#D97706',
+  salary:       '#3B82F6',
+  citizenship:  '#16A34A',
+  timezone:     '#0D9488',
+  job_hop:      '#D97706',
+  hh_spec:      '#4F46E5',
+  title:        '#7C3AED',
+  education:    '#0D9488',
+  univ_rank:    '#0D9488',
+  age:          '#D97706',
+  forbidden:    '#DC2626',
+};
+const SURVEY_COND_COLOR = '#835DE1';
+function checkerColor(type) { return CHECKER_COLORS[type] || '#835DE1'; }
+
+// ══════════════════════════════════════════
+// SURVEY CHECKS
+// ══════════════════════════════════════════
+function renderSurveyBlock(id) {
+  const s = settings[id];
+  if (!s.survey) s.survey = SURVEY_DEFAULT();
+  const sv = s.survey;
+  document.getElementById('survey-main-toggle').checked = sv.on;
+  document.getElementById('survey-expanded').style.display = sv.on ? 'block' : 'none';
+  document.getElementById('survey-score-enabled').checked = sv.score.enabled;
+  document.getElementById('survey-score-num').value = sv.score.min;
+  updateSurveyScoreBadge(sv.score.required);
+  updateSurveyScoreOpacity(sv.score.enabled);
+  renderSurveyConditions(id);
+}
+
+function onSurveyMainToggle(on) {
+  document.getElementById('survey-expanded').style.display = on ? 'block' : 'none';
+}
+
+function onSurveyScoreEnabled(on) {
+  updateSurveyScoreOpacity(on);
+}
+
+function updateSurveyScoreOpacity(on) {
+  const input = document.getElementById('survey-score-num');
+  const badge = document.getElementById('survey-score-req-badge');
+  [input, badge].forEach(el => {
+    el.style.opacity = on ? '1' : '0.35';
+    el.style.pointerEvents = on ? 'auto' : 'none';
+  });
+}
+
+function toggleSurveyScoreReq() {
+  const badge = document.getElementById('survey-score-req-badge');
+  updateSurveyScoreBadge(badge.textContent.trim() !== 'обязательное');
+}
+
+function updateSurveyScoreBadge(required) {
+  const badge = document.getElementById('survey-score-req-badge');
+  if (!badge) return;
+  badge.textContent = required ? 'обязательное' : 'необязательное';
+  badge.className = required ? 'badge badge-teal survey-req-badge' : 'badge badge-gray survey-req-badge';
+}
+
+function renderSurveyConditions(id) {
+  const s = settings[id];
+  if (!s.survey) s.survey = SURVEY_DEFAULT();
+  const conds = s.survey.conditions;
+  const mandatory = conds.filter(c => c.required);
+  const optional  = conds.filter(c => !c.required);
+
+  const condRow = c => `
+    <div class="req-row">
+      <div class="req-circle" style="background:${SURVEY_COND_COLOR};" onclick="openEditCondition('${c.id}')">AI</div>
+      <div class="req-row-info" onclick="openEditCondition('${c.id}')">
+        <div class="req-row-type">${c.text}</div>
+      </div>
+      <button class="req-trash" onclick="deleteSurveyCondition('${c.id}')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>`;
+
+  document.getElementById('survey-conditions-mandatory').innerHTML = mandatory.map(condRow).join('');
+  document.getElementById('survey-conditions-optional').innerHTML  = optional.map(condRow).join('');
+}
+
+function openAddCondition(required) {
+  editingConditionId = null;
+  document.getElementById('m-survey-cond-title').textContent = 'Добавить условие';
+  document.getElementById('survey-cond-text').value = '';
+  document.getElementById('survey-cond-req-toggle').checked = required !== false;
+  document.getElementById('survey-cond-save-btn').textContent = 'Добавить';
+  document.getElementById('err-survey-cond').style.display = 'none';
+  document.getElementById('survey-cond-field').classList.remove('has-error');
+  openModal('m-survey-cond');
+}
+
+function openEditCondition(cid) {
+  const cond = (settings[curVacId]?.survey?.conditions || []).find(c => c.id === cid);
+  if (!cond) return;
+  editingConditionId = cid;
+  document.getElementById('m-survey-cond-title').textContent = 'Редактировать условие';
+  document.getElementById('survey-cond-text').value = cond.text;
+  document.getElementById('survey-cond-req-toggle').checked = cond.required;
+  document.getElementById('survey-cond-save-btn').textContent = 'Сохранить';
+  document.getElementById('err-survey-cond').style.display = 'none';
+  document.getElementById('survey-cond-field').classList.remove('has-error');
+  openModal('m-survey-cond');
+}
+
+function clearSurveyCondErr() {
+  document.getElementById('err-survey-cond').style.display = 'none';
+  document.getElementById('survey-cond-field').classList.remove('has-error');
+}
+
+function saveSurveyCondition() {
+  const text = document.getElementById('survey-cond-text').value.trim();
+  if (!text) {
+    document.getElementById('survey-cond-field').classList.add('has-error');
+    document.getElementById('err-survey-cond').style.display = 'block';
+    return;
+  }
+  const required = document.getElementById('survey-cond-req-toggle').checked;
+  const s = settings[curVacId];
+  if (!s.survey) s.survey = SURVEY_DEFAULT();
+  if (editingConditionId) {
+    const cond = s.survey.conditions.find(c => c.id === editingConditionId);
+    if (cond) { cond.text = text; cond.required = required; }
+    toast('Условие обновлено');
+  } else {
+    s.survey.conditions.push({ id: 'sc' + Date.now(), text, required });
+    toast('Условие добавлено');
+  }
+  renderSurveyConditions(curVacId);
+  closeModal('m-survey-cond');
+}
+
+function deleteSurveyCondition(cid) {
+  const s = settings[curVacId];
+  if (!s.survey) return;
+  s.survey.conditions = s.survey.conditions.filter(c => c.id !== cid);
+  renderSurveyConditions(curVacId);
+  toast('Условие удалено');
+}
+
+function toggleCondReq(cid) {
+  const s = settings[curVacId];
+  const cond = s.survey?.conditions?.find(c => c.id === cid);
+  if (!cond) return;
+  cond.required = !cond.required;
+  renderSurveyConditions(curVacId);
+}
+
+function toggleArDelay() {
+  const dd = document.getElementById('ar-delay-dd');
+  const isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  if (!isOpen) { renderArDelayDd(); dd.classList.add('open'); }
+}
+
+function renderArDelayDd() {
+  const dd = document.getElementById('ar-delay-dd');
+  if (!dd) return;
+  dd.innerHTML = AR_DELAY_OPTIONS.map(opt => {
+    const on = curArDelay === opt.value;
+    return `<div class="ar-stage-dd-item ${on?'selected':''}" onclick="selectArDelay(event,'${opt.value}')">
+      <span>${opt.label}</span>${on?'<span class="ar-stage-check">✓</span>':''}
+    </div>`;
+  }).join('');
+}
+
+function selectArDelay(e, val) {
+  e.stopPropagation();
+  curArDelay = val;
+  document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  renderArDelayVal();
+}
+
+function renderArDelayVal() {
+  const el = document.getElementById('ar-delay-val');
+  if (!el) return;
+  const opt = AR_DELAY_OPTIONS.find(o => o.value === curArDelay);
+  if (opt) el.textContent = opt.label;
+}
+
+// ══════════════════════════════════════════
+// REQUIREMENTS
+// ══════════════════════════════════════════
+function renderReqs(id) {
+  renderReqList('mandatory', reqs[id].mandatory);
+  renderReqList('optional',  reqs[id].optional);
+}
+function renderReqList(group, list) {
+  const el = document.getElementById(`req-${group}`);
+  if (!list.length) { el.innerHTML=''; return; }
+  el.innerHTML = list.map(r=>`
+    <div class="req-row">
+      <div class="req-circle" style="background:${checkerColor(r.type)};" onclick="editReq('${r.id}')">${r.label.slice(0,2)}</div>
+      <div class="req-row-info" onclick="editReq('${r.id}')">
+        <div class="req-row-type">${r.label}</div>
+        <div class="req-row-params">${r.params||'—'}</div>
+      </div>
+      <button class="req-trash" onclick="delReq(event,'${r.id}')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>`).join('');
+}
+function openAddReq(group) {
+  curReqGroup=group; editingReqId=null; selectedCheckerType='';
+  document.getElementById('m-req-title').textContent='Добавление требования';
+  const val=document.getElementById('checker-select-val');
+  val.textContent='Выбрать тип...'; val.className='checker-select-placeholder';
+  document.getElementById('checker-dd-list').classList.remove('open');
+  document.getElementById('checker-desc-wrap').style.display='none';
+  document.getElementById('checker-params').innerHTML='';
+  document.getElementById('req-save-btn').textContent='Добавить';
+  openModal('m-req');
+}
+function editReq(rid) {
+  const id=curVacId; let found, group;
+  for (const g of ['mandatory','optional']) {
+    found=reqs[id][g].find(r=>r.id===rid); if(found){group=g;break;}
+  }
+  if (!found) return;
+  curReqGroup=group; editingReqId=rid;
+  document.getElementById('m-req-title').textContent='Редактирование требования';
+  selectedCheckerType=found.type;
+  const val=document.getElementById('checker-select-val');
+  val.textContent=CHECKERS[found.type].label; val.className='checker-select-val';
+  document.getElementById('checker-dd-list').classList.remove('open');
+  onCheckerChange(found.type);
+  if (found.rawP1!==undefined){const p1=document.getElementById('p1');if(p1)p1.value=found.rawP1;}
+  if (found.rawP2!==undefined){const p2=document.getElementById('p2');if(p2)p2.value=found.rawP2;}
+  document.getElementById('req-save-btn').textContent='Сохранить';
+  openModal('m-req');
+}
+function delReq(e, rid) {
+  e.stopPropagation();
+  const id=curVacId;
+  for (const g of ['mandatory','optional']) {
+    const i=reqs[id][g].findIndex(r=>r.id===rid);
+    if(i!==-1){reqs[id][g].splice(i,1);renderReqs(id);toast('Требование удалено');return;}
+  }
+}
+function renderCheckerDd() {
+  const list=document.getElementById('checker-dd-list'); if(!list) return;
+  list.innerHTML=Object.entries(CHECKERS).map(([type,cfg])=>`
+    <div class="checker-dd-item ${selectedCheckerType===type?'selected':''}" onclick="selectChecker('${type}')">
+      <div><div class="checker-dd-name">${cfg.label}</div><div class="checker-dd-desc">${cfg.desc}</div></div>
+      <span class="checker-dd-check">✓</span>
+    </div>`).join('');
+}
+function toggleCheckerDd(e) {
+  e.stopPropagation();
+  const list=document.getElementById('checker-dd-list');
+  const isOpen=list.classList.contains('open');
+  list.classList.toggle('open',!isOpen);
+  if (!isOpen) {
+    renderCheckerDd();
+    const r=document.getElementById('checker-select-trigger').getBoundingClientRect();
+    list.style.top=(r.bottom+4)+'px'; list.style.left=r.left+'px'; list.style.width=r.width+'px';
+  }
+}
+function selectChecker(type) {
+  selectedCheckerType=type;
+  const val=document.getElementById('checker-select-val');
+  val.textContent=CHECKERS[type].label; val.className='checker-select-val';
+  document.getElementById('checker-dd-list').classList.remove('open');
+  onCheckerChange(type);
+}
+function onCheckerChange(type) {
+  if (!type) { document.getElementById('checker-desc-wrap').style.display='none'; document.getElementById('checker-params').innerHTML=''; return; }
+  const cfg=CHECKERS[type];
+  document.getElementById('checker-desc').textContent=cfg.desc;
+  document.getElementById('checker-desc-wrap').style.display=cfg.desc?'block':'none';
+  document.getElementById('checker-params').innerHTML=cfg.html();
+}
+function saveReq() {
+  const type=selectedCheckerType; if(!type){toast('Выберите тип требования');return;}
+  const cfg=CHECKERS[type], params=cfg.fmt(), rawP1=v('p1'), rawP2=v('p2'), id=curVacId;
+  if (editingReqId) {
+    for (const g of ['mandatory','optional']) {
+      const i=reqs[id][g].findIndex(r=>r.id===editingReqId);
+      if(i!==-1){reqs[id][g][i]={...reqs[id][g][i],type,label:cfg.label,params,icon:cfg.icon,rawP1,rawP2};break;}
+    }
+    toast('Требование обновлено');
+  } else {
+    reqs[id][curReqGroup].push({id:'r'+Date.now(),type,label:cfg.label,params,icon:cfg.icon,rawP1,rawP2});
+    toast('Требование добавлено');
+  }
+  renderReqs(id); closeModal('m-req');
+}
+
+// ══════════════════════════════════════════
+// ADD VACANCY
+// ══════════════════════════════════════════
+function clearVacErr() {
+  document.getElementById('field-vac-url').classList.remove('has-error');
+  document.getElementById('err-vac-url').style.display='none';
+}
+function submitAddVac() {
+  const urlEl=document.getElementById('vac-url'), errEl=document.getElementById('err-vac-url'), fieldEl=document.getElementById('field-vac-url');
+  const url=urlEl?urlEl.value.trim():'';
+  if (!url) { fieldEl.classList.add('has-error'); errEl.style.display='block'; errEl.textContent='Введи ссылку на вакансию'; return; }
+  if (!url.includes('huntflow')) { fieldEl.classList.add('has-error'); errEl.style.display='block'; errEl.textContent='Такую ссылку не можем добавить, введи ссылку из Хантфлоу'; return; }
+  if (vacancies.find(v=>v.url===url)) { fieldEl.classList.add('has-error'); errEl.style.display='block'; errEl.textContent='Эта вакансия уже добавлена другим рекрутером'; return; }
+  const newId=Math.max(...vacancies.map(v=>v.id))+1;
+  vacancies.push({id:newId,title:'Новая вакансия',owner:'me',ownerName:'Иванова А.',status:'active',features:[],added:'12 мая 2026',url});
+  reqs[newId]={mandatory:[],optional:[]};
+  settings[newId]={on:false,statuses:[],sources:[],approvedOk:true,rejectedOk:true,wolves:false,ar:AR_DEFAULT(),survey:SURVEY_DEFAULT()};
+  curVacId=newId;
+  closeModal('m-add-vac'); resetAddVacModal(); toast('Вакансия добавлена'); go('vac',curVacId);
+}
+function resetAddVacModal() {
+  document.getElementById('m-add-vac-body').innerHTML=`<div class="modal-field" id="field-vac-url"><div class="modal-field-label">Ссылка на Хантфлоу</div><input id="vac-url" type="text" placeholder="Введи" oninput="clearVacErr()"><div class="modal-field-error" id="err-vac-url" style="display:none;"></div></div>`;
+  document.getElementById('m-add-vac-foot').innerHTML=`<button class="btn btn-primary" style="width:100%;" onclick="submitAddVac()">Добавить</button>`;
+}
+
+// ══════════════════════════════════════════
+// ACTION SHEET
+// ══════════════════════════════════════════
+function openAS() {
+  let valid = true;
+
+  const tog = document.getElementById('review-toggle').checked;
+  if (tog) {
+    if (!selStatuses.length) {
+      document.getElementById('err-statuses').style.display='block';
+      document.getElementById('ul-statuses').classList.add('error');
+      valid=false;
+    }
+    if (!selSources.length) {
+      document.getElementById('err-sources').style.display='block';
+      document.getElementById('ul-sources').classList.add('error');
+      valid=false;
+    }
+  }
+
+  // Validate AR
+  const b2On = document.getElementById('ar-b2-toggle').checked;
+  if (b2On) {
+    if (!curArStage) {
+      document.getElementById('ar-stage-wrap').classList.add('has-error');
+      document.getElementById('err-ar-stage').style.display = 'block';
+      valid = false;
+    }
+  }
+
+  if (!valid) { toast('Заполни все обязательные поля'); return; }
+  document.getElementById('as-save').classList.add('open');
+}
+function closeAS() { document.getElementById('as-save').classList.remove('open'); }
+function asOverlayClick(e) { if(e.target.id==='as-save') closeAS(); }
+
+function confirmSave() {
+  const btn=document.getElementById('as-confirm-btn'), spinner=document.getElementById('as-spinner');
+  btn.disabled=true; spinner.style.display='block';
+  setTimeout(()=>{
+    const s=settings[curVacId];
+    const tog=document.getElementById('review-toggle').checked;
+    if (s) {
+      s.on=tog; s.statuses=[...selStatuses]; s.sources=[...selSources];
+      if (!s.ar) s.ar=AR_DEFAULT();
+
+      // Save B1
+      s.ar.b1.on = document.getElementById('ar-b1-toggle').checked;
+      s.ar.b1.moveToReject = document.getElementById('ar-b1-move-toggle').checked;
+
+      // Save B2
+      s.ar.b2.on = document.getElementById('ar-b2-toggle').checked;
+      s.ar.b2.sources = [...selArSources];
+      s.ar.b2.noStage = curArStage;
+
+      // reasonTpls updated live in onTplReasonInput
+
+      s.ar.delay = curArDelay;
+
+      // Save survey
+      if (!s.survey) s.survey = SURVEY_DEFAULT();
+      s.survey.on = document.getElementById('survey-main-toggle').checked;
+      s.survey.score.enabled = document.getElementById('survey-score-enabled').checked;
+      s.survey.score.min = parseInt(document.getElementById('survey-score-num').value) || 60;
+      const scoreBadge = document.getElementById('survey-score-req-badge');
+      s.survey.score.required = scoreBadge && scoreBadge.textContent.trim() === 'обязательное';
+    }
+
+    const vac=vacancies.find(x=>x.id===curVacId);
+    if (vac && s) {
+      if (s.on && !vac.features.includes('review')) vac.features.push('review');
+      if (!s.on) vac.features=vac.features.filter(f=>f!=='review');
+      const arActive = s.ar && (s.ar.b1.on || s.ar.b2.on);
+      if (arActive && !vac.features.includes('autorej')) vac.features.push('autorej');
+      if (!arActive) vac.features=vac.features.filter(f=>f!=='autorej');
+      const surveyActive = s.survey && s.survey.on;
+      if (surveyActive && !vac.features.includes('hh-survey')) vac.features.push('hh-survey');
+      if (!surveyActive) vac.features=vac.features.filter(f=>f!=='hh-survey');
+    }
+
+    btn.disabled=false; spinner.style.display='none';
+    closeAS(); toast('Настройки сохранены');
+    setTimeout(()=>go('vac',curVacId), 400);
+  }, 1100);
+}
+
+// ══════════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.getElementById('checker-dd-list')?.classList.remove('open');
+  if (!document.querySelector('.overlay.open')) document.body.style.overflow='';
+}
+function overlayClick(e,id) { if(e.target.id===id) closeModal(id); }
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+let _tt;
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+function v(id) { const el=document.getElementById(id); return el?el.value.trim():''; }
+
+document.addEventListener('click', e=>{
+  if (!e.target.closest('.flat-field-box') && !e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-dropdown').forEach(d=>d.classList.remove('open'));
+  }
+  if (!e.target.closest('#checker-select-trigger') && !e.target.closest('#checker-dd-list')) {
+    document.getElementById('checker-dd-list')?.classList.remove('open');
+  }
+});
+
+document.addEventListener('keydown', e=>{
+  if (e.key!=='Enter') return;
+  if (e.target.tagName==='TEXTAREA') return;
+  if (document.getElementById('m-req').classList.contains('open'))     { e.preventDefault(); saveReq(); return; }
+  if (document.getElementById('m-add-vac').classList.contains('open')) { e.preventDefault(); submitAddVac(); return; }
+  if (document.getElementById('m-survey-cond').classList.contains('open')) { e.preventDefault(); saveSurveyCondition(); return; }
+  if (document.getElementById('as-save').classList.contains('open'))   { e.preventDefault(); confirmSave(); return; }
+});
+
+renderList();
+</script>
+</body>
+</html>
